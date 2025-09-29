@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kentucky Fried Horses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for dark theme and Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            color: #d1d5db;
+        }
+        /* Glassy effect for content sections */
+        .bg-glass {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        /* Hover effect for interactive cards */
+        .hover-scale:hover {
+            transform: scale(1.03);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+        /* Jumbotron Background and Logo */
+        .jumbotron-bg {
+            background-image: url('https://placehold.co/1200x600/1f2937/d1d5db?text=The+Ranch+Arena');
+            background-size: cover;
+            background-position: center;
+        }
+        .logo {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            color: #ffffff;
+            letter-spacing: -3px;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.8);
+        }
+        /* Custom scrollbar for player list for aesthetic */
+        .player-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .player-list::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 4px;
+        }
+        .player-list::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+        /* Loading spinner for API calls */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Modal setup */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+    <!-- Jumbotron Section (Header) -->
+    <header class="w-full max-w-7xl rounded-3xl p-8 md:p-12 mb-8 jumbotron-bg flex items-center justify-center text-center shadow-2xl">
+        <div class="bg-black bg-opacity-60 p-6 md:p-10 rounded-2xl border-2 border-white/20">
+            <h1 class="logo leading-tight mb-2">KFH</h1>
+            <p class="text-xl md:text-3xl text-white font-medium tracking-wide">Kentucky Fried Horses</p>
+            <p class="text-base text-blue-400 mt-2">The Ranch Arena</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="w-full max-w-4xl mb-10 flex justify-center space-x-4">
+        <a href="#" data-target="team" class="nav-link px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xl transition-all hover-scale active:scale-95">Our Team</a>
+        <a href="#" data-target="stadium" class="nav-link px-6 py-3 rounded-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-extrabold shadow-xl transition-all hover-scale active:scale-95">Stadium</a>
+    </nav>
+
+    <main class="w-full max-w-6xl space-y-12">
+
+        <!-- Our Team Section (Default View) -->
+        <section id="team" class="bg-glass rounded-3xl p-6 md:p-10 shadow-2xl">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-8 text-white border-b border-blue-500 pb-3">Our Team</h2>
+            <div class="space-y-10">
+                
+                <!-- History -->
+                <div class="p-4 bg-gray-800 rounded-2xl shadow-md">
+                    <h3 class="text-2xl font-bold text-white mb-3">Team History</h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        Founded in **2025**, the Kentucky Fried Horses are a new franchise committed to bringing a championship to our city, starting now. We are dedicated to building a tradition of winning both on and off the court, with a focus on community and fan engagement. Our ethos is built on speed, precision, and relentless energy—a reflection of our mascot.
+                    </p>
+                </div>
+                
+                <!-- Roster -->
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Roster</h3>
+                    <div class="player-list h-[400px] overflow-y-auto pr-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <!-- Player Card Templates -->
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="LeBron James" onclick="showPlayerModal('LeBron James')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">LJ</div>
+                                <h4 class="text-lg font-bold text-white">LeBron James</h4>
+                                <p class="text-blue-400 text-sm">SF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Ace Bailey" onclick="showPlayerModal('Ace Bailey')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">AB</div>
+                                <h4 class="text-lg font-bold text-white">Ace Bailey</h4>
+                                <p class="text-blue-400 text-sm">SF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Tyus Jones" onclick="showPlayerModal('Tyus Jones')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">TJ</div>
+                                <h4 class="text-lg font-bold text-white">Tyus Jones</h4>
+                                <p class="text-blue-400 text-sm">PG</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Malik Beasley" onclick="showPlayerModal('Malik Beasley')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">MB</div>
+                                <h4 class="text-lg font-bold text-white">Malik Beasley</h4>
+                                <p class="text-blue-400 text-sm">SG</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Obi Toppin" onclick="showPlayerModal('Obi Toppin')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">OT</div>
+                                <h4 class="text-lg font-bold text-white">Obi Toppin</h4>
+                                <p class="text-blue-400 text-sm">PF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Isaiah Hartenstein" onclick="showPlayerModal('Isaiah Hartenstein')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">IH</div>
+                                <h4 class="text-lg font-bold text-white">Isaiah Hartenstein</h4>
+                                <p class="text-blue-400 text-sm">C</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Shake Milton" onclick="showPlayerModal('Shake Milton')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">SM</div>
+                                <h4 class="text-lg font-bold text-white">Shake Milton</h4>
+                                <p class="text-blue-400 text-sm">SG</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Andre Drummond" onclick="showPlayerModal('Andre Drummond')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">AD</div>
+                                <h4 class="text-lg font-bold text-white">Andre Drummond</h4>
+                                <p class="text-blue-400 text-sm">C</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Jae Crowder" onclick="showPlayerModal('Jae Crowder')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">JC</div>
+                                <h4 class="text-lg font-bold text-white">Jae Crowder</h4>
+                                <p class="text-blue-400 text-sm">SF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Lonnie Walker IV" onclick="showPlayerModal('Lonnie Walker IV')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">LW</div>
+                                <h4 class="text-lg font-bold text-white">Lonnie Walker IV</h4>
+                                <p class="text-blue-400 text-sm">SG</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Jamal Cain" onclick="showPlayerModal('Jamal Cain')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">JC</div>
+                                <h4 class="text-lg font-bold text-white">Jamal Cain</h4>
+                                <p class="text-blue-400 text-sm">SF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Thomas Bryant" onclick="showPlayerModal('Thomas Bryant')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">TB</div>
+                                <h4 class="text-lg font-bold text-white">Thomas Bryant</h4>
+                                <p class="text-blue-400 text-sm">C</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Precious Achiuwa" onclick="showPlayerModal('Precious Achiuwa')">
+                                <div class="w-20 h-2osd rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">PA</div>
+                                <h4 class="text-lg font-bold text-white">Precious Achiuwa</h4>
+                                <p class="text-blue-400 text-sm">PF</p>
+                            </div>
+                            <div class="player-card bg-gray-800 rounded-2xl p-4 text-center shadow-lg transition-all hover-scale cursor-pointer" data-player="Jared Mcain" onclick="showPlayerModal('Jared Mcain')">
+                                <div class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center bg-blue-600 text-white text-xl font-bold border-4 border-yellow-400">JM</div>
+                                <h4 class="text-lg font-bold text-white">Jared Mcain</h4>
+                                <p class="text-blue-400 text-sm">PG</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLM-powered Player Bio Generator -->
+                <div class="bg-gray-800 rounded-3xl p-6 md:p-10 shadow-2xl border border-blue-600/50">
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">✨ Analyst Hub: Generate a Player Bio</h3>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-center mb-6">
+                        <input type="text" id="playerName" placeholder="Player Name (e.g., Lebron James)" class="flex-1 w-full px-4 py-3 rounded-full bg-gray-700 text-white placeholder-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <input type="text" id="playerPosition" placeholder="Position (e.g., SF)" class="flex-1 w-full px-4 py-3 rounded-full bg-gray-700 text-white placeholder-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        <button id="generateBtn" class="w-full sm:w-auto px-8 py-3 rounded-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-extrabold shadow-lg transition-all hover-scale active:scale-95">Analyze Player</button>
+                    </div>
+                    <div id="bioOutput" class="p-6 bg-gray-700 rounded-2xl text-gray-300 text-sm leading-relaxed min-h-[100px] flex items-center justify-center text-center">
+                        Enter a player's name and position and click "Analyze Player" to generate a custom bio using our AI Analyst.
+                    </div>
+                </div>
+
+                <!-- Staff -->
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Coaching and Management</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-gray-800 rounded-2xl p-4 text-center shadow-md transition-all hover-scale">
+                            <img src="https://placehold.co/150x150/4b5563/d1d5db?text=A.+Jones" alt="Coach A. Jones" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-400">
+                            <h4 class="text-xl font-bold text-white">Adan Jones</h4>
+                            <p class="text-blue-400">Head Coach</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-2xl p-4 text-center shadow-md transition-all hover-scale">
+                            <img src="https://placehold.co/150x150/4b5563/d1d5db?text=T.+Turner" alt="Manager T. Turner" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-400">
+                            <h4 class="text-xl font-bold text-white">Trevor Turner</h4>
+                            <p class="text-blue-400">General Manager</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-2xl p-4 text-center shadow-md transition-all hover-scale">
+                            <img src="https://placehold.co/150x150/4b5563/d1d5db?text=S.+Kahn" alt="Trainer S. Kahn" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-400">
+                            <h4 class="text-xl font-bold text-white">Sarah Kahn</h4>
+                            <p class="text-blue-400">Head Trainer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stadium Section (Now includes Seating and Pricing) -->
+        <section id="stadium" class="bg-glass rounded-3xl p-6 md:p-10 shadow-2xl" style="display: none;">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-8 text-white border-b border-blue-500 pb-3">The Ranch Arena & Seating</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-all hover-scale">
+                    <h3 class="text-2xl font-bold text-white mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Architecture & Vibe
+                    </h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        The Ranch features a stunning glass-and-steel dome, creating a futuristic and elegant look that captures the energy of the city. We prioritized fan comfort and cutting-edge technology to deliver an unparalleled game-day experience.
+                    </p>
+                </div>
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-all hover-scale">
+                    <h3 class="text-2xl font-bold text-white mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.5a1.5 1.5 0 011.002 0l4.377 1.25a.75.75 0 01.5.75v10.5a.75.75 0 01-.5.75l-4.377 1.25a1.5 1.5 0 01-1.002 0l-4.377-1.25a.75.75 0 01-.5-.75V4.5a.75.75 0 01.5-.75l4.377-1.25z"/>
+                        </svg>
+                        Key Amenities
+                    </h3>
+                    <ul class="list-disc list-inside text-gray-400 space-y-2 ml-4">
+                        <li>**High-Definition** Center Court JumboTron</li>
+                        <li>**All-Inclusive** VIP Suites and Clubs</li>
+                        <li>**Mobile Ordering** from every seat</li>
+                        <li>Dedicated **Family Zones** for young fans</li>
+                        <li>Free **Gigabit Wi-Fi** access throughout the arena</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 rounded-2xl p-6 shadow-xl transition-all hover-scale md:col-span-2">
+                    <h3 class="text-2xl font-bold text-white mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Location & Transit
+                    </h3>
+                    <p class="text-gray-400">
+                        The arena is located just off I-64 at Exit 58, ensuring easy access from all major arteries. Dedicated shuttle service runs from the downtown transit hub, and there are over 5,000 secure parking spots available for reservation.
+                    </p>
+                </div>
+                
+                <!-- Pricing and Levels (Ticket Pricing remains) -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">Ticket Pricing per Level (Mock Pricing)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- VIP/Courtside Level (Red - Most Expensive) -->
+                        <div class="bg-red-900/40 p-5 rounded-2xl border-2 border-red-500 shadow-xl transition-all hover-scale">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-xl font-extrabold text-white">VIP Floor & Suites</h4>
+                                <span class="text-2xl font-bold text-red-300">$350 - $1,500</span>
+                            </div>
+                            <p class="text-gray-200 text-sm mb-3">Sections: **Floor**, **Luxury Suites (Accessible)**</p>
+                            <p class="text-red-100 text-sm">Closest view, all-inclusive food/drink, private entrance, potential player access.</p>
+                        </div>
+
+                        <!-- Lower Bowl Level (100 Level - Blue) -->
+                        <div class="bg-blue-900/40 p-5 rounded-2xl border-2 border-blue-500 shadow-xl transition-all hover-scale">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-xl font-extrabold text-white">Lower Bowl (100 Level)</h4>
+                                <span class="text-2xl font-bold text-blue-300">$120 - $300</span>
+                            </div>
+                            <p class="text-gray-200 text-sm mb-3">Sections: **101-124**</p>
+                            <p class="text-blue-100 text-sm">Excellent view, close to the action, dedicated concession access.</p>
+                        </div>
+                        
+                        <!-- Upper Level (300 Level - Green - Cheapest) -->
+                        <div class="bg-green-900/40 p-5 rounded-2xl border-2 border-green-500 shadow-xl transition-all hover-scale">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-xl font-extrabold text-white">Upper Level (300 Level)</h4>
+                                <span class="text-2xl font-bold text-green-300">$35 - $95</span>
+                            </div>
+                            <p class="text-gray-200 text-sm mb-3">Sections: **301-334**</p>
+                            <p class="text-green-100 text-sm">Most affordable option, great perspective for seeing plays develop, perfect for groups and families.</p>
+                        </div>
+
+                    </div>
+                    <div class="mt-8 p-4 bg-gray-800 rounded-xl text-center">
+                        <p class="text-lg font-semibold text-yellow-300">Season Tickets & Group Rates are available! Contact Sales: 555-KFH-TIXS</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full max-w-7xl mt-12 p-6 text-center text-sm text-gray-400 border-t border-gray-700">
+        <p>Copyright &copy; 2025 <a href="http://kentuckyfh.com" class="text-blue-400 hover:text-blue-300 hover:underline transition-colors">kentuckyfh.com</a>. All Rights Reserved. | Site designed for the KFH fanbase.</p>
+    </footer>
+
+    <!-- Player Stats Modal -->
+    <div id="playerModal" class="modal" onclick="if(event.target.id === 'playerModal') hidePlayerModal()">
+        <div class="bg-gray-900 rounded-3xl p-8 max-w-4xl w-11/12 shadow-2xl relative border-2 border-blue-600/70">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800" onclick="hidePlayerModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+                <div class="flex-shrink-0 w-32 h-32 rounded-full border-4 border-yellow-400 bg-blue-600 flex items-center justify-center text-white text-4xl font-bold">
+                    <span id="modal-player-initials"></span>
+                </div>
+                <div class="text-center md:text-left flex-1">
+                    <h3 id="modal-player-name" class="text-4xl font-extrabold text-white mb-2"></h3>
+                    <p id="modal-player-position" class="text-yellow-400 text-lg mb-4 font-semibold"></p>
+                    <p id="modal-player-bio" class="text-gray-300 leading-relaxed text-base mb-4"></p>
+                    <div class="grid grid-cols-4 gap-4 text-gray-200 bg-gray-800 p-4 rounded-xl">
+                        <div class="text-center">
+                            <p class="font-bold text-lg" id="modal-player-ppg"></p>
+                            <p class="font-semibold text-sm text-blue-300">PPG</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold text-lg" id="modal-player-rpg"></p>
+                            <p class="font-semibold text-sm text-blue-300">RPG</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold text-lg" id="modal-player-apg"></p>
+                            <p class="font-semibold text-sm text-blue-300">APG</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="font-bold text-lg" id="modal-player-fgp"></p>
+                            <p class="font-semibold text-sm text-blue-300">FG%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Highlights Section -->
+            <div id="highlights-section" class="mt-8 pt-6 border-t border-gray-700">
+                <h4 class="text-2xl font-bold text-white mb-4">Top Highlights</h4>
+                <div id="modal-player-highlights" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Highlights will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for players and their stats
+        const players = {
+            "LeBron James": {
+                initials: "LJ",
+                position: "SF",
+                bio: "A versatile and dominant small forward, known for his leadership and all-around game.",
+                stats: { ppg: 25.4, rpg: 7.2, apg: 7.6, fgp: "50.4%" },
+                highlights: [
+                    { title: "2016 NBA Finals Game 7 Block", videoUrl: "https://www.youtube.com/watch?v=F1R9F_vWd00" },
+                    { title: "Top 10 Career Plays", videoUrl: "https://www.youtube.com/watch?v=o54zO1Bv-x0" }
+                ]
+            },
+            "Ace Bailey": {
+                initials: "AB",
+                position: "SF",
+                bio: "A rising star with incredible athleticism and scoring ability from the forward position.",
+                stats: { ppg: 18.5, rpg: 6.1, apg: 2.3, fgp: "46.2%" },
+                highlights: [
+                    { title: "High School Mixtape", videoUrl: "https://www.youtube.com/watch?v=b8k_p0N4_7I" }
+                ]
+            },
+            "Tyus Jones": {
+                initials: "TJ",
+                position: "PG",
+                bio: "A reliable point guard known for his ball-handling skills and effective playmaking.",
+                stats: { ppg: 12.0, rpg: 2.8, apg: 6.9, fgp: "48.1%" },
+                highlights: [
+                    { title: "Best Assists", videoUrl: "https://www.youtube.com/watch?v=1p0G8dFqX9o" }
+                ]
+            },
+            "Malik Beasley": {
+                initials: "MB",
+                position: "SG",
+                bio: "A sharpshooting guard who can light it up from beyond the three-point line.",
+                stats: { ppg: 14.3, rpg: 3.7, apg: 1.5, fgp: "43.5%" },
+                highlights: [
+                    { title: "Career 3-Pointers", videoUrl: "https://www.youtube.com/watch?v=v4vF_71sB1E" }
+                ]
+            },
+            "Obi Toppin": {
+                initials: "OT",
+                position: "PF",
+                bio: "An explosive power forward known for his high-flying dunks and energy.",
+                stats: { ppg: 11.8, rpg: 4.5, apg: 1.2, fgp: "52.1%" },
+                highlights: [
+                    { title: "Top Dunks", videoUrl: "https://www.youtube.com/watch?v=n0v9Q303gD0" }
+                ]
+            },
+            "Isaiah Hartenstein": {
+                initials: "IH",
+                position: "C",
+                bio: "A skilled center with great passing and defensive instincts in the paint.",
+                stats: { ppg: 8.9, rpg: 9.4, apg: 2.5, fgp: "61.3%" },
+                highlights: [
+                    { title: "Defense & Assists", videoUrl: "https://www.youtube.com/watch?v=c2nS2w-bK6c" }
+                ]
+            },
+            "Shake Milton": {
+                initials: "SM",
+                position: "SG",
+                bio: "A versatile guard who provides reliable scoring off the bench.",
+                stats: { ppg: 9.8, rpg: 2.4, apg: 3.1, fgp: "45.0%" },
+                highlights: [
+                    { title: "Best Crossover Moves", videoUrl: "https://www.youtube.com/watch?v=P_vM2XoK_W0" }
+                ]
+            },
+            "Andre Drummond": {
+                initials: "AD",
+                position: "C",
+                bio: "A dominant rebounder and defensive presence in the frontcourt.",
+                stats: { ppg: 7.3, rpg: 10.5, apg: 0.9, fgp: "57.8%" },
+                highlights: [
+                    { title: "Best Rebounds", videoUrl: "https://www.youtube.com/watch?v=s3_z28-S-hE" }
+                ]
+            },
+            "Jae Crowder": {
+                initials: "JC",
+                position: "SF",
+                bio: "A tough and gritty forward known for his defensive intensity and veteran leadership.",
+                stats: { ppg: 6.5, rpg: 3.4, apg: 1.3, fgp: "42.1%" },
+                highlights: [
+                    { title: "Key Defensive Plays", videoUrl: "https://www.youtube.com/watch?v=V5l92e3w7W4" }
+                ]
+            },
+            "Lonnie Walker IV": {
+                initials: "LW",
+                position: "SG",
+                bio: "An athletic two-guard who can score and create his own shot.",
+                stats: { ppg: 10.2, rpg: 2.7, apg: 1.8, fgp: "43.9%" },
+                highlights: [
+                    { title: "Career-High Scoring", videoUrl: "https://www.youtube.com/watch?v=8x8_310L-g8" }
+                ]
+            },
+            "Jamal Cain": {
+                initials: "JC",
+                position: "SF",
+                bio: "A versatile forward who provides energy and hustle on both ends of the court.",
+                stats: { ppg: 5.1, rpg: 3.0, apg: 0.8, fgp: "48.2%" },
+                highlights: [
+                    { title: "2023-24 Highlights", videoUrl: "https://www.youtube.com/watch?v=9c3c-f0y_x4" }
+                ]
+            },
+            "Thomas Bryant": {
+                initials: "TB",
+                position: "C",
+                bio: "A physical big man with a solid offensive game and a strong presence in the paint.",
+                stats: { ppg: 8.6, rpg: 5.9, apg: 0.7, fgp: "59.0%" },
+                highlights: [
+                    { title: "Best Offensive Plays", videoUrl: "https://www.youtube.com/watch?v=1lF5q-W5x_A" }
+                ]
+            },
+            "Precious Achiuwa": {
+                initials: "PA",
+                position: "PF",
+                bio: "An athletic and aggressive power forward known for his rebounding and defense.",
+                stats: { ppg: 7.9, rpg: 6.5, apg: 1.5, fgp: "47.7%" },
+                highlights: [
+                    { title: "2023-24 Highlights", videoUrl: "https://www.youtube.com/watch?v=K6tq-6GvFpE" }
+                ]
+            },
+            "Jared Mcain": {
+                initials: "JM",
+                position: "PG",
+                bio: "A young and promising point guard with a high basketball IQ.",
+                stats: { ppg: 9.3, rpg: 2.1, apg: 4.5, fgp: "41.5%" },
+                highlights: [
+                    { title: "2024 NCAA Tournament Highlights", videoUrl: "https://www.youtube.com/watch?v=0bLdFkE4f3k" }
+                ]
+            },
+        };
+
+        const modal = document.getElementById('playerModal');
+        const modalPlayerName = document.getElementById('modal-player-name');
+        const modalPlayerPosition = document.getElementById('modal-player-position');
+        const modalPlayerInitials = document.getElementById('modal-player-initials');
+        const modalPlayerBio = document.getElementById('modal-player-bio');
+        const modalPlayerPpg = document.getElementById('modal-player-ppg');
+        const modalPlayerRpg = document.getElementById('modal-player-rpg');
+        const modalPlayerApg = document.getElementById('modal-player-apg');
+        const modalPlayerFgp = document.getElementById('modal-player-fgp');
+        const modalPlayerHighlights = document.getElementById('modal-player-highlights');
+        const highlightsSection = document.getElementById('highlights-section');
+
+        function showPlayerModal(playerName) {
+            const player = players[playerName];
+            if (player) {
+                // Populate Modal details
+                modalPlayerName.textContent = playerName;
+                modalPlayerPosition.textContent = player.position;
+                modalPlayerInitials.textContent = player.initials;
+                modalPlayerBio.textContent = player.bio;
+                modalPlayerPpg.textContent = player.stats.ppg;
+                modalPlayerRpg.textContent = player.stats.rpg;
+                modalPlayerApg.textContent = player.stats.apg;
+                modalPlayerFgp.textContent = player.stats.fgp;
+
+                // Handle Highlights Section (using external links)
+                modalPlayerHighlights.innerHTML = '';
+                if (player.highlights && player.highlights.length > 0) {
+                    highlightsSection.style.display = 'block';
+                    player.highlights.forEach(highlight => {
+                        const highlightItem = document.createElement('div');
+                        highlightItem.className = 'w-full';
+                        highlightItem.innerHTML = `
+                            <div class="relative w-full rounded-xl overflow-hidden group shadow-lg">
+                                <a href="${highlight.videoUrl}" target="_blank" class="block w-full h-full bg-blue-700 hover:bg-blue-800 text-white font-semibold text-center py-4 px-4 rounded-xl transition-all flex items-center justify-center space-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400 group-hover:scale-110 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4.053a1 1 0 001.555.832l3.43-2.028a1 1 0 000-1.664l-3.43-2.028z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm sm:text-base">${highlight.title}</span>
+                                </a>
+                            </div>
+                        `;
+                        modalPlayerHighlights.appendChild(highlightItem);
+                    });
+                } else {
+                    highlightsSection.style.display = 'none';
+                }
+
+                modal.classList.add('show');
+            }
+        }
+
+        function hidePlayerModal() {
+            modal.classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('main section');
+
+            // Initial visibility setup: only show 'team' section
+            sections.forEach(section => {
+                section.style.display = section.id === 'team' ? 'block' : 'none';
+            });
+
+            // Navigation logic
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.target.getAttribute('data-target');
+                    // Update section visibility
+                    sections.forEach(section => {
+                        section.style.display = section.id === targetId ? 'block' : 'none';
+                    });
+                });
+            });
+
+            // AI Bio Generator Logic
+            const generateBtn = document.getElementById('generateBtn');
+            const playerNameInput = document.getElementById('playerName');
+            const playerPositionInput = document.getElementById('playerPosition');
+            const bioOutput = document.getElementById('bioOutput');
+
+            generateBtn.addEventListener('click', async () => {
+                const playerName = playerNameInput.value.trim();
+                const playerPosition = playerPositionInput.value.trim();
+
+                if (!playerName || !playerPosition) {
+                    bioOutput.innerHTML = '<span class="text-red-400 font-semibold">Please enter both a player name and position to run the analysis.</span>';
+                    return;
+                }
+
+                // Show loading state
+                bioOutput.innerHTML = '<div class="loader"></div>';
+
+                const systemPrompt = `Act as a world-class basketball analyst for the Kentucky Fried Horses website. Your task is to write a concise, compelling, one-paragraph bio (max 4 sentences) for a basketball player. Use an optimistic and exciting tone, and focus on their key strengths and potential contributions to the team.`;
+                const userQuery = `Write a one-paragraph player bio for a player named ${playerName} who plays the ${playerPosition} position. If they are a real player, reference their actual style of play.`;
+
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                try {
+                    let response;
+                    const maxRetries = 3;
+                    for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            break;
+                        }
+                        const delay = Math.pow(2, retryCount) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        if (retryCount === maxRetries - 1) {
+                            throw new Error(`API call failed after ${maxRetries} attempts.`);
+                        }
+                    }
+
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (text) {
+                        bioOutput.innerHTML = `<p>${text}</p>`;
+                    } else {
+                        bioOutput.innerHTML = '<span class="text-red-400 font-semibold">Failed to generate a bio. The AI analyst may be unavailable.</span>';
+                    }
+                } catch (error) {
+                    console.error('Error generating bio:', error);
+                    bioOutput.innerHTML = `<span class="text-red-400 font-semibold">Error: Could not connect to the analysis engine.</span>`;
+                }
+            });
+        });
+    </script>
+</body>
